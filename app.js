@@ -14,9 +14,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
 // 엑셀 파일 읽기
-const workbook = xlsx.readFile(path.join(__dirname, '2024timetb.xlsx'));
-// const workbook = xlsx.readFile('2024timetb.xlsx');
-// const workbook = xlsx.readFile(path.join(__dirname, 'public', '2024timetb.xlsx'));
+const workbook = xlsx.readFile(path.join(__dirname, 'time.xlsx'));
+// const workbook = xlsx.readFile('time.xlsx');
+// const workbook = xlsx.readFile(path.join(__dirname, 'public', 'time.xlsx'));
 
 
 
