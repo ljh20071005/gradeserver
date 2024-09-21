@@ -1,17 +1,29 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const xlsx = require('xlsx');
 
 // Express 애플리케이션 생성
 const app = express();
 const port = 1005;
 
+//https://github.com/ljh20071005/gradeserver/blob/main/time.xlsx
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
-const workbook = xlsx.readFile(path.resolve('./time.xlsx'));
+// const workbook = xlsx.readFile(path.resolve('./time.xlsx'));
+const axios = require('axios');
+const xlsx = require('xlsx');
 
+// GitHub에서 엑셀 파일을 가져오는 코드
+axios.get('https://github.com/ljh20071005/gradeserver/blob/main/time.xlsx', { responseType: 'arraybuffer' })
+  .then(response => {
+    const workbook = xlsx.read(response.data, { type: 'buffer' });
+    console.log('엑셀 파일 불러오기 성공');
+  })
+  .catch(error => {
+    console.error('엑셀 파일을 불러오는 중 오류 발생:', error);
+  });
 
 // "학생" 시트와 "반" 시트 데이터 로드
 const studentSheetName = '학생';
