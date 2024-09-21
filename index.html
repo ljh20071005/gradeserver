@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시스템</title>
+    <meta name="description" content="졸려요">
+    <style>
+        :root {
+            --background-color: #f7fdff;
+            --primary-color: #5870f8;
+            --hover-color: #e0eafa;
+            --button-bg-color: #8ad7ea;
+            --button-hover-bg-color: #daf2fdbe;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .logo {
+            width: 200px;
+            height: auto;
+        }
+
+        #settingsButton {
+            margin-left: auto;
+            padding: 5px 10px;
+            font-size: 12px;
+            background-color: var(--button-bg-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .theme-settings {
+            display: none; /* 처음에는 숨김 */
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            padding: 10px;
+            background-color: var(--background-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        form label, form input, form button {
+            margin: 0 10px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 150px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 7px 10px;
+            background-color: var(--button-bg-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: var(--button-hover-bg-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #fff;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        tbody tr:hover {
+            background-color: var(--hover-color);
+        }
+
+        .gpa-calculator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #totalGPA {
+            font-size: 2em;
+            font-weight: bold; 
+            color: #000000;
+            font-family: 'Arial', sans-serif;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <a href="http://gsa.gen.hs.kr/main/main.php">
+            <img src="images.jpg" alt="GSA" class="logo">
+        </a>
+        <button id="settingsButton" aria-label="설정">설정</button>
+    </header>
+
+    <main>
+        <h1> :) </h1>
+
+        <div class="theme-settings" id="themeSettings">
+            <h2>색 테마 설정</h2>
+            <label for="bgColor">배경 색:</label>
+            <input type="color" id="bgColor" name="bgColor" value="#f7fdff">
+            <label for="primaryColor">표 색:</label>
+            <input type="color" id="primaryColor" name="primaryColor" value="#5870f8">
+            <label for="buttonColor">버튼 색:</label>
+            <input type="color" id="buttonColor" name="buttonColor" value="#8ad7ea">
+            <button id="applyTheme"> GO </button>
+        </div>
+
+        <form id="timetableForm">
+            <label for="name">이름 :</label>
+            <input type="text" id="name" name="name" required>
+            <button type="submit">GO</button>
+        </form>
+
+        <section>
+            <h2>Timetable</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>PERIOD</th>
+                        <th>MON</th>
+                        <th>TUE</th>
+                        <th>WED</th>
+                        <th>THU</th>
+                        <th>FRI</th>
+                    </tr>
+                </thead>
+                <tbody id="timetableBody"></tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Classmates</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>CLASS</th>
+                        <th>STUDENTS</th>
+                    </tr>
+                </thead>
+                <tbody id="classmatesBody"></tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>GPA calculator</h2>
+            <div class="gpa-calculator">
+                <span><span id="totalGPA">0.00</span>ㅤㅤㅤ</span>
+                <button type="button" id="calculateGPA">GO</button>
+            </div>
+            <div id="gradeCalculatorContainer">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>과목명</th>
+                            <th>학점</th>
+                            <th>성적</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjects"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const settingsButton = document.getElementById('settingsButton');
+            const themeSettings = document.getElementById('themeSettings');
+            const applyThemeButton = document.getElementById('applyTheme');
+            const timetableForm = document.getElementById('timetableForm');
+            const calculateGPAButton = document.getElementById('calculateGPA');
+            
+            // 설정 버튼 클릭 시 테마 설정 창 표시/숨기기
+            settingsButton.addEventListener('click', function() {
+                if (themeSettings.style.display === 'none' || themeSettings.style.display === '') {
+                    themeSettings.style.display = 'block';
+                } else {
+                    themeSettings.style.display = 'none';
+                }
+            });
+
+            // 테마 설정 적용 코드
+            applyThemeButton.addEventListener('click', function() {
+                const bgColor = document.getElementById('bgColor').value;
+                const primaryColor = document.getElementById('primaryColor').value;
+                const buttonColor = document.getElementById('buttonColor').value;
+
+                applyTheme(bgColor, primaryColor, buttonColor);
+
+                // 설정 저장
+                localStorage.setItem('themeSettings', JSON.stringify({
+                    bgColor,
+                    primaryColor,
+                    buttonColor
+                }));
+            });
+
+            function applyTheme(bgColor, primaryColor, buttonColor) {
+                document.documentElement.style.setProperty('--background-color', bgColor);
+                document.documentElement.style.setProperty('--primary-color', primaryColor);
+                document.documentElement.style.setProperty('--button-bg-color', buttonColor);
+                document.documentElement.style.setProperty('--button-hover-bg-color', lightenColor(buttonColor, 20));
+            }
+
+            function lightenColor(hex, percent) {
+                const num = parseInt(hex.replace("#",""),16),
+                      amt = Math.round(2.55 * percent),
+                      R = (num >> 16) + amt,
+                      G = (num >> 8 & 0x00FF) + amt,
+                      B = (num & 0x0000FF) + amt;
+                return "#" + (
+                    0x1000000 +
+                    (R<255?R<1?0:R:255)*0x10000 +
+                    (G<255?G<1?0:G:255)*0x100 +
+                    (B<255?B<1?0:B:255)
+                ).toString(16).slice(1);
+            }
+
+            timetableForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const name = document.getElementById('name').value.trim();
+
+                if (!name) {
+                    alert('이름을 입력해주세요.');
+                    return;
+                }
+
+                fetch('/get-timetable', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ name: name }),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('네트워크 응답에 문제가 있습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    renderTimetable(data.timetable);
+                    renderClassmates(data.classmates);
+                    populateSubjects(data.timetable);
+                })
+                .catch(error => {
+                    console.error('Error occurred:', error);
+                    alert('데이터를 가져오는 동안 오류가 발생했습니다. 다시 시도해주세요.');
+                });
+            });
+
+            function renderTimetable(timetable) {
+                const timetableBody = document.getElementById('timetableBody');
+                timetableBody.innerHTML = '';
+
+                if (timetable.error) {
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 6;
+                    cell.textContent = timetable.error;
+                    row.appendChild(cell);
+                    timetableBody.appendChild(row);
+                    return;
+                }
+
+                timetable.forEach((row, index) => {
+                    const tableRow = document.createElement('tr');
+                    const periodCell = document.createElement('td');
+                    periodCell.textContent = `${index + 1}교시`;
+                    tableRow.appendChild(periodCell);
+
+                    row.forEach(cell => {
+                        const dayCell = document.createElement('td');
+                        dayCell.textContent = cell;
+                        tableRow.appendChild(dayCell);
+                    });
+
+                    timetableBody.appendChild(tableRow);
+                });
+            }
+
+            function renderClassmates(classmates) {
+                const classmatesBody = document.getElementById('classmatesBody');
+                classmatesBody.innerHTML = '';
+
+                if (classmates.error) {
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 2;
+                    cell.textContent = classmates.error;
+                    row.appendChild(cell);
+                    classmatesBody.appendChild(row);
+                    return;
+                }
+
+                classmates.forEach(classmate => {
+                    const row = document.createElement('tr');
+                    const subjectCell = document.createElement('td');
+                    subjectCell.textContent = classmate.subject;
+                    row.appendChild(subjectCell);
+
+                    const studentsCell = document.createElement('td');
+                    studentsCell.textContent = classmate.students.join(', ');
+                    row.appendChild(studentsCell);
+
+                    classmatesBody.appendChild(row);
+                });
+            }
+
+            function populateSubjects(timetable) {
+                const subjectsDiv = document.getElementById('subjects');
+                subjectsDiv.innerHTML = '';
+
+                const uniqueSubjects = new Set();
+                timetable.forEach(row => {
+                    row.forEach(subject => {
+                        if (subject && subject !== '공강' && !subject.includes('체육')) {
+                            uniqueSubjects.add(subject);
+                        }
+                    });
+                });
+
+                uniqueSubjects.forEach(subject => {
+                    const row = document.createElement('tr');
+
+                    const subjectCell = document.createElement('td');
+                    subjectCell.textContent = subject;
+
+                    const creditCell = document.createElement('td');
+                    const creditInput = document.createElement('input');
+                    creditInput.type = 'number';
+                    creditInput.min = '1';
+                    creditInput.max = '3';
+                    creditInput.value = '3';
+                    creditCell.appendChild(creditInput);
+
+                    const gradeCell = document.createElement('td');
+                    const gradeSelect = document.createElement('select');
+                    const grades = ['A+', 'A0', 'A-', 'B+', 'B0', 'B-', 'C+', 'C0', 'C-', 'D+', 'D0', 'D-', 'F'];
+                    grades.forEach(grade => {
+                        const option = document.createElement('option');
+                        option.value = grade;
+                        option.textContent = grade;
+                        gradeSelect.appendChild(option);
+                    });
+                    gradeCell.appendChild(gradeSelect);
+
+                    row.appendChild(subjectCell);
+                    row.appendChild(creditCell);
+                    row.appendChild(gradeCell);
+
+                    subjectsDiv.appendChild(row);
+                });
+            }
+
+            calculateGPAButton.addEventListener('click', function() {
+                const subjectsDiv = document.getElementById('subjects');
+                const rows = subjectsDiv.getElementsByTagName('tr');
+                let totalGradePoints = 0;
+                let totalCredits = 0;
+
+                const gradeMapping = {
+                    'A+': 4.3,
+                    'A0': 4.0,
+                    'A-': 3.7,
+                    'B+': 3.3,
+                    'B0': 3.0,
+                    'B-': 2.7,
+                    'C+': 2.3,
+                    'C0': 2.0,
+                    'C-': 1.7,
+                    'D+': 1.3,
+                    'D0': 1.0,
+                    'D-': 0.7,
+                    'F': 0.0
+                };
+
+                for (let row of rows) {
+                    const creditInput = row.querySelector('input[type="number"]');
+                    const gradeSelect = row.querySelector('select');
+
+                    const gradeValue = gradeMapping[gradeSelect.value] || 0;
+                    const creditValue = parseFloat(creditInput.value) || 0;
+
+                    totalGradePoints += gradeValue * creditValue;
+                    totalCredits += creditValue;
+                }
+
+                const totalGPA = totalCredits > 0 ? (totalGradePoints / totalCredits).toFixed(2) : '0.00';
+                document.getElementById('totalGPA').textContent = totalGPA;
+            });
+        });
+    </script>
+</body>
+</html>
