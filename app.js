@@ -10,16 +10,8 @@ const port = 1005;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
-// 엑셀 파일 읽기
-let workbook;
-try {
-    const filePath = path.join(__dirname, 'time.xlsx');
-    console.log(`엑셀 파일 경로: ${filePath}`); // 경로를 확인하기 위해 출력
-    workbook = xlsx.readFile(filePath); // 엑셀 파일을 불러오기
-    console.log('엑셀 파일 읽기 성공');
-} catch (error) {
-    console.error('엑셀 파일을 읽는 동안 오류 발생:', error);
-}
+const workbook = xlsx.readFile(path.resolve('./time.xlsx'));
+
 
 // "학생" 시트와 "반" 시트 데이터 로드
 const studentSheetName = '학생';
