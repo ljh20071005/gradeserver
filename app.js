@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname)));
 // 엑셀 파일 읽기
 let workbook;
 try {
-    workbook = xlsx.readFile(path.join(__dirname, '2024timetb.xlsx'));
+    workbook = xlsx.readFile(path.join(__dirname, 'time.xlsx'));
     console.log('엑셀 파일 읽기 성공');
 } catch (error) {
     console.error('엑셀 파일을 읽는 동안 오류 발생:', error);
