@@ -14,18 +14,27 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
 // 엑셀 파일 읽기
-const workbook = xlsx.readFile(path.join(__dirname, 'time.xlsx'));
-// const workbook = xlsx.readFile('time.xlsx');
-// const workbook = xlsx.readFile(path.join(__dirname, 'public', 'time.xlsx'));
-
-
-
+let workbook;
+try {
+    workbook = xlsx.readFile(path.join(__dirname, '2024timetb.xlsx'));
+    console.log('엑셀 파일 읽기 성공');
+} catch (error) {
+    console.error('엑셀 파일을 읽는 동안 오류 발생:', error);
+}
 
 // "학생" 시트와 "반" 시트 데이터 로드
 const studentSheetName = '학생';
 const classSheetName = '반';
-const studentData = xlsx.utils.sheet_to_json(workbook.Sheets[studentSheetName], { header: 1 });
-const classData = xlsx.utils.sheet_to_json(workbook.Sheets[classSheetName], { header: 1 });
+let studentData = [];
+let classData = [];
+
+try {
+    studentData = xlsx.utils.sheet_to_json(workbook.Sheets[studentSheetName], { header: 1 });
+    classData = xlsx.utils.sheet_to_json(workbook.Sheets[classSheetName], { header: 1 });
+    console.log('엑셀 데이터 로드 성공');
+} catch (error) {
+    console.error('엑셀 시트 데이터를 불러오는 동안 오류 발생:', error);
+}
 
 // 이름에서 숫자를 제거하는 함수 (학번 제거)
 function extract_name(full_name) {
@@ -94,11 +103,20 @@ app.get('/', (req, res) => {
 
 // POST 요청 처리: 학생 이름으로 시간표 및 반 친구 목록 조회
 app.post('/get-timetable', (req, res) => {
-    const name = extract_name(req.body.name);
-    const timetable = getStudentTimetable(name);
-    const classmates = getClassmates(name);
+    try {
+        const name = extract_name(req.body.name);
+        const timetable = getStudentTimetable(name);
+        const classmates = getClassmates(name);
 
-    res.json({ timetable, classmates });
+        if (timetable.error || classmates.error) {
+            res.status(404).json({ error: timetable.error || classmates.error });
+        } else {
+            res.json({ timetable, classmates });
+        }
+    } catch (error) {
+        console.error('데이터 처리 중 오류 발생:', error);
+        res.status(500).json({ error: '서버에서 데이터를 처리하는 동안 오류가 발생했습니다.' });
+    }
 });
 
 // 서버 실행
