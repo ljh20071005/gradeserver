@@ -1,32 +1,26 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const xlsx = require('xlsx');
 
 // Express 애플리케이션 생성
 const app = express();
 const port = 1005;
 
-//https://github.com/ljh20071005/gradeserver/blob/main/time.xlsx
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
-// const workbook = xlsx.readFile(path.resolve('./time.xlsx'));
-const axios = require('axios');
-const xlsx = require('xlsx');
-
-// GitHub에서 엑셀 파일을 가져오는 코드
-axios.get('https://github.com/ljh20071005/gradeserver/blob/main/time.xlsx', { responseType: 'arraybuffer' })
-  .then(response => {
-    const workbook = xlsx.read(response.data, { type: 'buffer' });
-    console.log('엑셀 파일 불러오기 성공');
-  })
-  .catch(error => {
-    console.error('엑셀 파일을 불러오는 중 오류 발생:', error);
-  });
+// 엑셀 파일 읽기
+let workbook;
+try {
+    workbook = xlsx.readFile(path.resolve('./time.xlsx'));
+    console.log('엑셀 파일 읽기 성공');
+} catch (error) {
+    console.error('엑셀 파일을 읽는 동안 오류 발생:', error);
+}
 
 // "학생" 시트와 "반" 시트 데이터 로드
-const studentSheetName = '학생';
+const studentSheetName = '학생'; // Ensure these are correct
 const classSheetName = '반';
 let studentData = [];
 let classData = [];
@@ -34,7 +28,8 @@ let classData = [];
 try {
     studentData = xlsx.utils.sheet_to_json(workbook.Sheets[studentSheetName], { header: 1 });
     classData = xlsx.utils.sheet_to_json(workbook.Sheets[classSheetName], { header: 1 });
-    console.log('엑셀 데이터 로드 성공');
+    console.log('학생 시트 데이터:', studentData);
+    console.log('반 시트 데이터:', classData);
 } catch (error) {
     console.error('엑셀 시트 데이터를 불러오는 동안 오류 발생:', error);
 }
@@ -54,27 +49,28 @@ function getStudentTimetable(studentName) {
     let timetable = [];
     let studentRowIndex = -1;
 
-    // 학생 이름 검색 후 시간표 추출
+    console.log("Searching for student name:", studentName);
+
     for (let i = 0; i < studentData.length; i++) {
         const row = studentData[i].map(extract_name);
+        console.log("Checking row:", row);
         if (row.includes(studentName)) {
             studentRowIndex = i;
             break;
         }
     }
 
-    // 학생 이름을 찾은 경우에 시간표를 추출
     if (studentRowIndex !== -1) {
         for (let i = studentRowIndex + 1; i < studentData.length; i++) {
             const row = studentData[i];
-            if (row.every(cell => !cell)) break;  // 빈 줄이 나오면 종료
-
+            if (row.every(cell => !cell)) break;
             timetable.push(row.map(cell => cleanSubjectName(cell || '공강')));
         }
     } else {
         return { error: `${studentName} 학생의 시간표를 찾을 수 없습니다.` };
     }
 
+    console.log("Found timetable:", timetable);
     return timetable;
 }
 
@@ -82,9 +78,8 @@ function getStudentTimetable(studentName) {
 function getClassmates(studentName) {
     const classmates = [];
 
-    // 반에서 같은 과목을 듣는 친구들 찾기
     for (const row of classData) {
-        const class_name = row[0];  // 반 이름
+        const class_name = row[0];
         const students_in_class = row.slice(7).map(val => extract_name(val)).filter(Boolean);
 
         if (students_in_class.includes(studentName)) {
@@ -107,9 +102,9 @@ app.get('/', (req, res) => {
 // POST 요청 처리: 학생 이름으로 시간표 및 반 친구 목록 조회
 app.post('/get-timetable', (req, res) => {
     try {
-        const name = extract_name(req.body.name);
+        const name = extract_name(req.body.name.trim());
         const timetable = getStudentTimetable(name);
-        const classmates = getClassmates(name);
+        const classmates = getClassmates(name);const classmates = getClassmates(이름);
 
         if (timetable.error || classmates.error) {
             res.status(404).json({ error: timetable.error || classmates.error });
@@ -124,5 +119,5 @@ app.post('/get-timetable', (req, res) => {
 
 // 서버 실행
 app.listen(port, () => {
-    console.log(`Wow! :) Server is running on http://localhost:${port}`);
+    console.log(`Server is running on http://localhost:${port}`);
 });
