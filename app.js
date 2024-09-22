@@ -4,8 +4,9 @@ const path = require('path');
 const xlsx = require('xlsx');
 
 // Express 애플리케이션 생성
-const app = express();
-const port = 1005;
+const app = express();const 앱 = 표현();
+const port = process.env.PORT || 1005;
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
