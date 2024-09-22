@@ -338,6 +338,41 @@
                 });
             }
 
+
+            function renderTimetable(timetable) {
+                console.log("Received timetable:", timetable); // 디버그용 로그
+            
+                const timetableBody = document.getElementById('timetableBody');
+                timetableBody.innerHTML = '';
+            
+                if (timetable.error) {
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 6;
+                    cell.textContent = timetable.error;
+                    row.appendChild(cell);
+                    timetableBody.appendChild(row);
+                    return;
+                }
+            
+                timetable.forEach((row, index) => {
+                    const tableRow = document.createElement('tr');
+                    const periodCell = document.createElement('td');
+                    periodCell.textContent = `${index + 1}교시`;
+                    tableRow.appendChild(periodCell);
+            
+                    row.forEach(cell => {
+                        const dayCell = document.createElement('td');
+                        dayCell.textContent = cell;
+                        tableRow.appendChild(dayCell);
+                    });
+            
+                    timetableBody.appendChild(tableRow);
+                });
+            }
+
+
+            
             function renderClassmates(classmates) {
                 const classmatesBody = document.getElementById('classmatesBody');
                 classmatesBody.innerHTML = '';
