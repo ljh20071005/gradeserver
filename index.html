@@ -278,6 +278,8 @@
                     return;
                 }
 
+                // 서버로 POST 요청 보내기
+                                // 서버로 POST 요청 보내기
                 fetch('/get-timetable', {
                     method: 'POST',
                     headers: {
@@ -286,18 +288,20 @@
                     body: new URLSearchParams({ name: name }),
                 })
                 .then(response => {
+                    console.log('서버 응답 상태:', response.status);
                     if (!response.ok) {
                         throw new Error('네트워크 응답에 문제 발생');
                     }
                     return response.json();
                 })
                 .then(data => {
+                    console.log('받은 데이터:', data);  // 응답 데이터를 콘솔에 출력
                     renderTimetable(data.timetable);
                     renderClassmates(data.classmates);
                     populateSubjects(data.timetable);
                 })
                 .catch(error => {
-                    console.error('Error occurred:', error);
+                    console.error('데이터 처리 중 오류 발생:', error);  // 상세한 오류 메시지 출력
                     alert('데이터를 가져오는 데에서 오류 발생');
                 });
             });
@@ -446,3 +450,4 @@
     </script>
 </body>
 </html>
+
