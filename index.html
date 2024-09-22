@@ -46,7 +46,7 @@
         }
 
         .theme-settings {
-            display: none; /* 처음에는 숨김 */
+            display: none;
             position: absolute;
             top: 60px;
             right: 20px;
@@ -149,7 +149,7 @@
 
         <div class="theme-settings" id="themeSettings">
             <h2>색 테마 설정</h2>
-            <label for="bgColor">배경 색:</label>
+            <label for="bgColor">배경 색:</label>배경 색:
             <input type="color" id="bgColor" name="bgColor" value="#f7fdff">
             <label for="primaryColor">표 색:</label>
             <input type="color" id="primaryColor" name="primaryColor" value="#5870f8">
@@ -278,32 +278,27 @@
                     return;
                 }
 
-                // 서버로 POST 요청 보내기
-                                // 서버로 POST 요청 보내기
-              
-                fetch('/api/get-timetable', {
+                fetch('/get-timetable', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
                     body: new URLSearchParams({ name: name }),
                 })
-
                 .then(response => {
-                    console.log('서버 응답 상태:', response.status);
                     if (!response.ok) {
                         throw new Error('네트워크 응답에 문제 발생');
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('받은 데이터:', data);  // 응답 데이터를 콘솔에 출력
+                    console.log("Received timetable:", data.timetable);
                     renderTimetable(data.timetable);
                     renderClassmates(data.classmates);
                     populateSubjects(data.timetable);
                 })
                 .catch(error => {
-                    console.error('데이터 처리 중 오류 발생:', error);  // 상세한 오류 메시지 출력
+                    console.error('데이터 처리 중 오류 발생:', error);
                     alert('데이터를 가져오는 데에서 오류 발생');
                 });
             });
@@ -338,41 +333,6 @@
                 });
             }
 
-
-            function renderTimetable(timetable) {
-                console.log("Received timetable:", timetable); // 디버그용 로그
-            
-                const timetableBody = document.getElementById('timetableBody');
-                timetableBody.innerHTML = '';
-            
-                if (timetable.error) {
-                    const row = document.createElement('tr');
-                    const cell = document.createElement('td');
-                    cell.colSpan = 6;
-                    cell.textContent = timetable.error;
-                    row.appendChild(cell);
-                    timetableBody.appendChild(row);
-                    return;
-                }
-            
-                timetable.forEach((row, index) => {
-                    const tableRow = document.createElement('tr');
-                    const periodCell = document.createElement('td');
-                    periodCell.textContent = `${index + 1}교시`;
-                    tableRow.appendChild(periodCell);
-            
-                    row.forEach(cell => {
-                        const dayCell = document.createElement('td');
-                        dayCell.textContent = cell;
-                        tableRow.appendChild(dayCell);
-                    });
-            
-                    timetableBody.appendChild(tableRow);
-                });
-            }
-
-
-            
             function renderClassmates(classmates) {
                 const classmatesBody = document.getElementById('classmatesBody');
                 classmatesBody.innerHTML = '';
@@ -479,7 +439,7 @@
                     totalGradePoints += gradeValue * creditValue;
                     totalCredits += creditValue;
                 }
-
+                                
                 const totalGPA = totalCredits > 0 ? (totalGradePoints / totalCredits).toFixed(2) : '0.00';
                 document.getElementById('totalGPA').textContent = totalGPA;
             });
@@ -487,4 +447,6 @@
     </script>
 </body>
 </html>
+
+
 
