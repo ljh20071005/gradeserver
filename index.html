@@ -280,13 +280,15 @@
 
                 // 서버로 POST 요청 보내기
                                 // 서버로 POST 요청 보내기
-                fetch('/get-timetable', {
+              
+                fetch('/api/get-timetable', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
                     body: new URLSearchParams({ name: name }),
                 })
+
                 .then(response => {
                     console.log('서버 응답 상태:', response.status);
                     if (!response.ok) {
