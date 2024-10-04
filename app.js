@@ -7,16 +7,15 @@ const xlsx = require('xlsx');
 const app = express();
 const port = 1005;
 
-// body-parser 설정 (POST 요청 데이터를 처리하기 위함)
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// 정적 파일 서빙 (이미지, CSS 등)
 app.use(express.static(path.join(__dirname)));
 
 // 엑셀 파일 읽기
 let workbook;
 try {
-    workbook = xlsx.readFile(path.resolve('./time.xlsx'));
+    const filePath = path.join(__dirname, 'time.xlsx');
+    console.log(`엑셀 파일 경로: ${filePath}`); // 경로를 확인하기 위해 출력
+    workbook = xlsx.readFile(filePath); // 엑셀 파일을 불러오기
     console.log('엑셀 파일 읽기 성공');
 } catch (error) {
     console.error('엑셀 파일을 읽는 동안 오류 발생:', error);
@@ -102,9 +101,9 @@ app.get('/', (req, res) => {
 });
 
 // POST 요청 처리: 학생 이름으로 시간표 및 반 친구 목록 조회
-app.post('/get-timetable', (req, res) => {app.post('/get-timetable', (req, res) => {
+app.post('/get-timetable', (req, res) => {
     try {
-        const name = extract_name(req.body.name);  // 이름을 req.body에서 가져옴
+        const name = extract_name(req.body.name);
         const timetable = getStudentTimetable(name);
         const classmates = getClassmates(name);
 
