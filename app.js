@@ -12,27 +12,34 @@ app.use(express.static(path.join(__dirname)));
 
 // 엑셀 파일 읽기
 let workbook;
+let studentData = [];
+let classData = [];
+const studentMap = new Map();
+
 try {
     const filePath = path.join(__dirname, 'time.xlsx');
     console.log(`엑셀 파일 경로: ${filePath}`); // 경로를 확인하기 위해 출력
     workbook = xlsx.readFile(filePath); // 엑셀 파일을 불러오기
     console.log('엑셀 파일 읽기 성공');
-} catch (error) {
-    console.error('엑셀 파일을 읽는 동안 오류 발생:', error);
-}
+    
+    // "학생" 시트와 "반" 시트 데이터 로드
+    const studentSheetName = '학생';
+    const classSheetName = '반';
 
-// "학생" 시트와 "반" 시트 데이터 로드
-const studentSheetName = '학생';
-const classSheetName = '반';
-let studentData = [];
-let classData = [];
-
-try {
     studentData = xlsx.utils.sheet_to_json(workbook.Sheets[studentSheetName], { header: 1 });
     classData = xlsx.utils.sheet_to_json(workbook.Sheets[classSheetName], { header: 1 });
+
     console.log('엑셀 데이터 로드 성공');
+
+    // 학생 데이터를 인덱싱해서 이름으로 빠르게 검색할 수 있도록 저장
+    studentData.forEach((row, i) => {
+        const name = extract_name(row[0]);
+        studentMap.set(name, i); // 학생 이름을 인덱스와 함께 저장
+    });
+
 } catch (error) {
-    console.error('엑셀 시트 데이터를 불러오는 동안 오류 발생:', error);
+    console.error('엑셀 파일을 읽는 동안 오류 발생:', error);
+    process.exit(1); // 서버 시작을 중단
 }
 
 // 이름에서 숫자를 제거하는 함수 (학번 제거)
@@ -48,27 +55,18 @@ function cleanSubjectName(subject) {
 // 학생 시간표 추출 함수 (학생 시트 기반)
 function getStudentTimetable(studentName) {
     let timetable = [];
-    let studentRowIndex = -1;
+    const studentRowIndex = studentMap.get(studentName);
 
-    // 학생 이름 검색 후 시간표 추출
-    for (let i = 0; i < studentData.length; i++) {
-        const row = studentData[i].map(extract_name);
-        if (row.includes(studentName)) {
-            studentRowIndex = i;
-            break;
-        }
+    if (studentRowIndex === undefined) {
+        return { error: `${studentName} 학생의 시간표를 찾을 수 없습니다.` };
     }
 
     // 학생 이름을 찾은 경우에 시간표를 추출
-    if (studentRowIndex !== -1) {
-        for (let i = studentRowIndex + 1; i < studentData.length; i++) {
-            const row = studentData[i];
-            if (row.every(cell => !cell)) break;  // 빈 줄이 나오면 종료
+    for (let i = studentRowIndex + 1; i < studentData.length; i++) {
+        const row = studentData[i];
+        if (row.every(cell => !cell)) break;  // 빈 줄이 나오면 종료
 
-            timetable.push(row.map(cell => cleanSubjectName(cell || '공강')));
-        }
-    } else {
-        return { error: `${studentName} 학생의 시간표를 찾을 수 없습니다.` };
+        timetable.push(row.map(cell => cleanSubjectName(cell || '공강')));
     }
 
     return timetable;
@@ -108,13 +106,20 @@ app.post('/get-timetable', (req, res) => {
         const classmates = getClassmates(name);
 
         if (timetable.error || classmates.error) {
-            res.status(404).json({ error: timetable.error || classmates.error });
+            res.status(404).json({
+                success: false,
+                message: timetable.error || classmates.error
+            });
         } else {
-            res.json({ timetable, classmates });
+            res.json({
+                success: true,
+                timetable,
+                classmates
+            });
         }
     } catch (error) {
         console.error('데이터 처리 중 오류 발생:', error);
-        res.status(500).json({ error: '서버에서 데이터를 처리하는 동안 오류가 발생했습니다.' });
+        res.status(500).json({ success: false, message: '서버에서 데이터를 처리하는 동안 오류가 발생했습니다.' });
     }
 });
 
