@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const xlsx = require('xlsx');
+const fs = require('fs');
+
 
 // Express 애플리케이션 생성
 const app = express();
@@ -16,31 +18,29 @@ let studentData = [];
 let classData = [];
 const studentMap = new Map();
 
+
 try {
-    const filePath = path.join(__dirname, '2024timetb.xlsx');
-    console.log(`엑셀 파일 경로: ${filePath}`); // 경로를 확인하기 위해 출력
-    workbook = xlsx.readFile(filePath); // 엑셀 파일을 불러오기
-    console.log('엑셀 파일 읽기 성공');
-    
-    // "학생" 시트와 "반" 시트 데이터 로드
-    const studentSheetName = '학생';
-    const classSheetName = '반';
+    const filePath = path.join(__dirname, '2024timetb.json');  // JSON 파일 경로
+    console.log(`JSON 파일 경로: ${filePath}`);
+    const jsonData = fs.readFileSync(filePath, 'utf-8');  // JSON 파일 읽기
+    const parsedData = JSON.parse(jsonData);  // JSON 파싱
 
-    studentData = xlsx.utils.sheet_to_json(workbook.Sheets[studentSheetName], { header: 1 });
-    classData = xlsx.utils.sheet_to_json(workbook.Sheets[classSheetName], { header: 1 });
+    // '학생' 시트가 아니라, '반' 키에서 데이터를 가져옴 
+    studentData = parsedData['반'];  // '반' 데이터를 studentData에 할당
 
-    console.log('엑셀 데이터 로드 성공');
+    console.log('JSON 데이터 로드 성공');
 
     // 학생 데이터를 인덱싱해서 이름으로 빠르게 검색할 수 있도록 저장
     studentData.forEach((row, i) => {
-        const name = extract_name(row[0]);
-        studentMap.set(name, i); // 학생 이름을 인덱스와 함께 저장
+        const name = extract_name(row["20113 이은석"]);  // 각 행에서 이름 추출
+        studentMap.set(name, i);  // 학생 이름을 인덱스와 함께 저장
     });
 
 } catch (error) {
-    console.error('엑셀 파일을 읽는 동안 오류 발생:', error.message);
-    process.exit(1); // 서버 시작을 중단
+    console.error('JSON 파일을 읽는 동안 오류 발생:', error.message);
+    process.exit(1);  // 서버 시작 중단
 }
+
 
 // 이름에서 숫자를 제거하는 함수 (학번 제거)
 function extract_name(full_name) {
