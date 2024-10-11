@@ -38,7 +38,7 @@ try {
     });
 
 } catch (error) {
-    console.error('엑셀 파일을 읽는 동안 오류 발생:', error);
+    console.error('엑셀 파일을 읽는 동안 오류 발생:', error.message);
     process.exit(1); // 서버 시작을 중단
 }
 
