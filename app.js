@@ -17,7 +17,7 @@ let classData = [];
 const studentMap = new Map();
 
 try {
-    const filePath = path.join(__dirname, 'time.xlsx');
+    const filePath = path.join(__dirname, '2024timetb.xlsx');
     console.log(`엑셀 파일 경로: ${filePath}`); // 경로를 확인하기 위해 출력
     workbook = xlsx.readFile(filePath); // 엑셀 파일을 불러오기
     console.log('엑셀 파일 읽기 성공');
